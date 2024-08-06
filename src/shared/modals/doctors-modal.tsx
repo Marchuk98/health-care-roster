@@ -10,14 +10,14 @@ import {
   Box,
   InputLabel,
 } from '@mui/material'
-import { Doctor } from '../services'
+import { DoctorType } from '../services'
 
 type Props = {
   isOpen: boolean
   onClose: () => void
-  doctor?: Doctor | null
+  doctor?: DoctorType | null
   isEditing: boolean
-  onSave: (doctor: Omit<Doctor, 'id'>) => Promise<void>
+  onSave: (doctor: Omit<DoctorType, 'id'>) => Promise<void>
 }
 
 const modalStyle = {
@@ -36,7 +36,7 @@ const modalStyle = {
 }
 
 export const DoctorsModal = ({ isOpen, onClose, doctor, isEditing, onSave }: Props) => {
-  const [formData, setFormData] = useState<Omit<Doctor, 'id'>>({
+  const [formData, setFormData] = useState<Omit<DoctorType, 'id'>>({
     fullname: doctor?.fullname || '',
     department: doctor?.department || '',
     isChief: doctor?.isChief || false,

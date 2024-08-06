@@ -10,14 +10,14 @@ import {
   Box,
   InputLabel,
 } from '@mui/material'
-import { Nurse } from '../services'
+import { NurseType } from '../services'
 
 type Props = {
   isOpen: boolean
   onClose: () => void
-  nurse?: Nurse | null
+  nurse?: NurseType | null
   isEditing: boolean
-  onSave: (nurse: Omit<Nurse, 'id'>) => void
+  onSave: (nurse: Omit<NurseType, 'id'>) => void
 }
 
 const modalStyle = {
@@ -36,7 +36,7 @@ const modalStyle = {
 }
 
 export const NurseModal = ({ isOpen, onClose, nurse, isEditing, onSave }: Props) => {
-  const [formData, setFormData] = useState<Omit<Nurse, 'id'>>({
+  const [formData, setFormData] = useState<Omit<NurseType, 'id'>>({
     name: nurse?.name || '',
     department: nurse?.department || '',
   })
