@@ -1,5 +1,5 @@
-export type Doctor = {
-  id: number
+export type DoctorType = {
+  id: string
   fullname: string
   department: string
   isChief: boolean

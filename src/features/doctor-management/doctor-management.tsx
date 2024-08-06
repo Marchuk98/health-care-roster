@@ -4,17 +4,30 @@ import { columnsDoctorsTable } from './columns-doctors-table.ts'
 
 import { AddIcon } from '../../shared/assets'
 import { Button } from '@mui/material'
-import { Doctor, DoctorsModal, getDoctors, TableCustom, useDisclose } from '../../shared'
+import {
+  deleteDoctor,
+  addDoctor,
+  updateDoctor,
+  DoctorsModal,
+  getDoctors,
+  DoctorType,
+  TableCustom,
+  useDisclose,
+} from '../../shared'
 
 export const DoctorManagement = () => {
-  const [doctorData, setDoctorData] = useState<Doctor[]>([])
+  const [doctorData, setDoctorData] = useState<DoctorType[]>([])
   const { isOpen, onOpen, onClose } = useDisclose()
-  const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null)
+  const [selectedDoctor, setSelectedDoctor] = useState<DoctorType | null>(null)
 
   useEffect(() => {
-    const fetchDoctors = () => {
-      const response = getDoctors()
-      setDoctorData(response)
+    const fetchDoctors = async () => {
+      try {
+        const response = await getDoctors()
+        setDoctorData(response)
+      } catch (error) {
+        console.error('Ошибка при получении данных врачей:', error)
+      }
     }
     fetchDoctors()
   }, [])
@@ -24,32 +37,39 @@ export const DoctorManagement = () => {
     onOpen()
   }, [onOpen])
 
-  const handleEditDoctor = useCallback((doctor: Doctor) => {
-    setSelectedDoctor(doctor)
-    onOpen()
-  }, [])
+  const handleEditDoctor = useCallback(
+    (doctor: DoctorType) => {
+      setSelectedDoctor(doctor)
+      onOpen()
+    },
+    [onOpen]
+  )
 
-  const handleDeleteDoctor = useCallback((id: number) => {
-    setDoctorData(prevData => prevData.filter(d => d.id !== id))
+  const handleDeleteDoctor = useCallback(async (id: string) => {
+    try {
+      await deleteDoctor(id)
+      setDoctorData(prevData => prevData.filter(d => d.id !== id))
+    } catch (error) {
+      console.error('Ошибка при удалении врача:', error)
+    }
   }, [])
 
   const handleSaveDoctor = useCallback(
-    async (doctor: Omit<Doctor, 'id'>) => {
+    async (doctor: Omit<DoctorType, 'id'>) => {
       try {
         if (selectedDoctor) {
-          const updatedDoctor = {
-            ...selectedDoctor,
-            ...doctor,
-          }
+          const updatedDoctor = await updateDoctor(selectedDoctor.id, doctor)
           setDoctorData(prevData =>
             prevData.map(d => (d.id === selectedDoctor.id ? updatedDoctor : d))
           )
         } else {
-          const newDoctor = {
-            ...doctor,
-            id: doctorData.length ? Math.max(...doctorData.map(d => d.id)) + 1 : 1,
-          }
-          setDoctorData(prevData => [...prevData, newDoctor])
+          const newDoctor = await addDoctor(doctor)
+          setDoctorData(prevData => {
+            if (!prevData.some(d => d.id === newDoctor.id)) {
+              return [...prevData, newDoctor]
+            }
+            return prevData
+          })
         }
       } catch (error) {
         console.error('Ошибка при сохранении врача:', error)
@@ -57,7 +77,7 @@ export const DoctorManagement = () => {
         onClose()
       }
     },
-    [selectedDoctor, onClose, doctorData]
+    [selectedDoctor, onClose]
   )
 
   return (

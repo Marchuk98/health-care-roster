@@ -22,14 +22,14 @@ export type Column = {
   type?: ColumnType
 }
 
-type TableProps<T extends { id: number }> = {
+type TableProps<T extends { id: string }> = {
   data: T[]
   columns: Column[]
   onEdit: (row: T) => void
-  onDelete: (id: number) => void
+  onDelete: (id: string) => void
 }
 
-export const TableCustom = <T extends { id: number }>({
+export const TableCustom = <T extends { id: string }>({
   columns,
   data,
   onEdit,

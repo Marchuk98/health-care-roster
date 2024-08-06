@@ -3,17 +3,30 @@ import { columnsNursesTable } from './columns-nurses-table.ts'
 
 import { AddIcon } from '../../shared/assets'
 import { Button } from '@mui/material'
-import { getNurses, Nurse, NurseModal, TableCustom, useDisclose } from '../../shared'
+import {
+  getNurses,
+  NurseType,
+  NurseModal,
+  TableCustom,
+  useDisclose,
+  deleteNurses,
+  updateNurses,
+  addNurses,
+} from '../../shared'
 
 export const NurseManagement = () => {
-  const [nurseData, setNurseData] = useState<Nurse[]>([])
+  const [nurseData, setNurseData] = useState<NurseType[]>([])
   const { isOpen, onOpen, onClose } = useDisclose()
-  const [selectedNurse, setSelectedNurse] = useState<Nurse | null>(null)
+  const [selectedNurse, setSelectedNurse] = useState<NurseType | null>(null)
 
   useEffect(() => {
-    const fetchNurses = () => {
-      const response = getNurses()
-      setNurseData(response)
+    const fetchNurses = async () => {
+      try {
+        const response = await getNurses()
+        setNurseData(response)
+      } catch (error) {
+        console.error('Ошибка при получении данных медсестёр:', error)
+      }
     }
     fetchNurses()
   }, [])
@@ -24,34 +37,38 @@ export const NurseManagement = () => {
   }, [onOpen])
 
   const handleEditNurse = useCallback(
-    (nurse: Nurse) => {
+    (nurse: NurseType) => {
       setSelectedNurse(nurse)
       onOpen()
     },
     [onOpen]
   )
 
-  const handleDeleteNurse = useCallback((id: number) => {
-    setNurseData(prevData => prevData.filter(n => n.id !== id))
+  const handleDeleteNurse = useCallback(async (id: string) => {
+    try {
+      await deleteNurses(id)
+      setNurseData(prevData => prevData.filter(n => n.id !== id))
+    } catch (error) {
+      console.error('Ошибка при удалении медсестры:', error)
+    }
   }, [])
 
   const handleSaveNurse = useCallback(
-    (nurse: Omit<Nurse, 'id'>) => {
+    async (nurse: Omit<NurseType, 'id'>) => {
       try {
         if (selectedNurse) {
-          const updatedNurse = {
-            ...selectedNurse,
-            ...nurse,
-          }
+          const updatedNurse = await updateNurses(selectedNurse.id, nurse)
           setNurseData(prevData =>
             prevData.map(n => (n.id === selectedNurse.id ? updatedNurse : n))
           )
         } else {
-          const newNurse = {
-            ...nurse,
-            id: nurseData.length ? Math.max(...nurseData.map(n => n.id)) + 1 : 1,
-          }
-          setNurseData(prevData => [...prevData, newNurse])
+          const newNurses = await addNurses(nurse)
+          setNurseData(prevData => {
+            if (!prevData.some(d => d.id === newNurses.id)) {
+              return [...prevData, newNurses]
+            }
+            return prevData
+          })
         }
       } catch (error) {
         console.error('Ошибка при сохранении медсестры:', error)
