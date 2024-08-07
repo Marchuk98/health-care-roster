@@ -76,6 +76,10 @@ export const DoctorsModal = ({ isOpen, onClose, doctor, isEditing, onSave }: Pro
   }
 
   const handleSubmit = () => {
+    if (!formData.fullname.trim() || !formData.department.trim()) {
+      return
+    }
+
     onSave(formData)
   }
 

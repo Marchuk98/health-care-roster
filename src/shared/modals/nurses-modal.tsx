@@ -68,6 +68,9 @@ export const NurseModal = ({ isOpen, onClose, nurse, isEditing, onSave }: Props)
   }
 
   const handleSubmit = () => {
+    if (!formData.name.trim() || !formData.department.trim()) {
+      return
+    }
     onSave(formData)
   }
 
